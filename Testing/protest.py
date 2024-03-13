@@ -5,11 +5,6 @@ vsp.VSPCheckSetup()
 vsp.ReadVSPFile("Deploy/Files/Check.vsp3")
 
 
-
-
-
-
-
 analysis_name = "VSPAEROComputeGeometry"
 vsp.SetAnalysisInputDefaults(analysis_name)
 method = list(vsp.GetIntAnalysisInput(analysis_name, "AnalysisMethod"))

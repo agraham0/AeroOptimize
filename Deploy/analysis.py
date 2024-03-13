@@ -5,7 +5,7 @@ import json
 
 # Declare Constants
 
-AEROSWEEP_PARAM_TYPES =  {
+AEROSWEEP_PARAM_TYPES = {
     "2DFEMFlag": "INT_DATA",
     "ActuatorDiskFlag": "INT_DATA",
     "AlphaEnd": "DOUBLE_DATA",
@@ -66,13 +66,69 @@ AEROSWEEP_PARAM_TYPES =  {
     "Ycg": "DOUBLE_DATA",
     "Zcg": "DOUBLE_DATA",
     "bref": "DOUBLE_DATA",
-    "cref": "DOUBLE_DATA"
-  }
+    "cref": "DOUBLE_DATA",
+}
+
+AEROSWEEP_RES_TYPES = {
+    "Alpha": "DOUBLE_DATA",
+    "AnalysisMethod": "INT_DATA",
+    "Beta": "DOUBLE_DATA",
+    "CDi": "DOUBLE_DATA",
+    "CDo": "DOUBLE_DATA",
+    "CDt": "DOUBLE_DATA",
+    "CDtot": "DOUBLE_DATA",
+    "CDtott": "DOUBLE_DATA",
+    "CFx": "DOUBLE_DATA",
+    "CFxi": "DOUBLE_DATA",
+    "CFxo": "DOUBLE_DATA",
+    "CFy": "DOUBLE_DATA",
+    "CFyi": "DOUBLE_DATA",
+    "CFyo": "DOUBLE_DATA",
+    "CFz": "DOUBLE_DATA",
+    "CFzi": "DOUBLE_DATA",
+    "CFzo": "DOUBLE_DATA",
+    "CL": "DOUBLE_DATA",
+    "CLi": "DOUBLE_DATA",
+    "CLo": "DOUBLE_DATA",
+    "CMx": "DOUBLE_DATA",
+    "CMxi": "DOUBLE_DATA",
+    "CMxo": "DOUBLE_DATA",
+    "CMy": "DOUBLE_DATA",
+    "CMyi": "DOUBLE_DATA",
+    "CMyo": "DOUBLE_DATA",
+    "CMz": "DOUBLE_DATA",
+    "CMzi": "DOUBLE_DATA",
+    "CMzo": "DOUBLE_DATA",
+    "CS": "DOUBLE_DATA",
+    "CSi": "DOUBLE_DATA",
+    "CSo": "DOUBLE_DATA",
+    "E": "DOUBLE_DATA",
+    "FC_AoA_": "DOUBLE_DATA",
+    "FC_Beta_": "DOUBLE_DATA",
+    "FC_Bref_": "DOUBLE_DATA",
+    "FC_Cref_": "DOUBLE_DATA",
+    "FC_Mach_": "DOUBLE_DATA",
+    "FC_Pitch_Rate": "DOUBLE_DATA",
+    "FC_ReCref_": "DOUBLE_DATA",
+    "FC_Rho_": "DOUBLE_DATA",
+    "FC_Roll__Rate": "DOUBLE_DATA",
+    "FC_Sref_": "DOUBLE_DATA",
+    "FC_Vinf_": "DOUBLE_DATA",
+    "FC_Xcg_": "DOUBLE_DATA",
+    "FC_Yaw___Rate": "DOUBLE_DATA",
+    "FC_Ycg_": "DOUBLE_DATA",
+    "FC_Zcg_": "DOUBLE_DATA",
+    "L/D": "DOUBLE_DATA",
+    "Mach": "DOUBLE_DATA",
+    "T/QS": "DOUBLE_DATA",
+    "WakeIter": "INT_DATA",
+}
 
 # Check OpenVSP
 vsp.VSPCheckSetup()
 
-def unpack_des_vars(des_var_dict:dict):
+
+def unpack_des_vars(des_var_dict: dict):
     for i in des_var_dict.keys():
         list_vals = des_var_dict[i]
         des_var_dict[i] = np.linspace(list_vals[0], list_vals[1], list_vals[2])
@@ -80,12 +136,13 @@ def unpack_des_vars(des_var_dict:dict):
     permutations = [dict(zip(keys, v)) for v in itertools.product(*values)]
     return permutations
 
-def aero_sweep_analysis(vsp_fpath:str, des_vars:dict, sim_params:dict, wing_id:str):
+
+def aero_sweep_analysis(vsp_fpath: str, des_vars: dict, sim_params: dict, wing_id: str):
 
     # Checking that vsp is working
 
     # Read in file
-    vsp.ReadVSPFile(vsp_fpath) 
+    vsp.ReadVSPFile(vsp_fpath)
 
     # Loading des_vars
     for param in des_vars.keys():
@@ -93,7 +150,7 @@ def aero_sweep_analysis(vsp_fpath:str, des_vars:dict, sim_params:dict, wing_id:s
         param_id = vsp.GetParm(wing_id, param_name, group)
         vsp.SetParmVal(param_id, des_vars[param])
     vsp.Update()
-  
+
     # Degen Geometry
     analysis_name = "VSPAEROComputeGeometry"
     vsp.SetAnalysisInputDefaults(analysis_name)
@@ -105,8 +162,7 @@ def aero_sweep_analysis(vsp_fpath:str, des_vars:dict, sim_params:dict, wing_id:s
     # VSPAEROSweep
     analysis_name = "VSPAEROSweep"
     vsp.SetAnalysisInputDefaults(analysis_name)
-    
-    
+
     vsp.SetStringAnalysisInput(analysis_name, "WingID", wing_id, 0)
 
     # Update the inputs
@@ -114,7 +170,9 @@ def aero_sweep_analysis(vsp_fpath:str, des_vars:dict, sim_params:dict, wing_id:s
         if AEROSWEEP_PARAM_TYPES[key] == "INT_DATA":
             vsp.SetIntAnalysisInput(analysis_name, key, (int(sweep_inputs[key]),), 0)
         if AEROSWEEP_PARAM_TYPES[key] == "DOUBLE_DATA":
-            vsp.SetDoubleAnalysisInput(analysis_name, key, (float(sweep_inputs[key]),), 0)
+            vsp.SetDoubleAnalysisInput(
+                analysis_name, key, (float(sweep_inputs[key]),), 0
+            )
     vsp.Update()
 
     # Execute the analysis
@@ -122,10 +180,16 @@ def aero_sweep_analysis(vsp_fpath:str, des_vars:dict, sim_params:dict, wing_id:s
     resp = vsp.FindLatestResultsID("VSPAERO_History")
     CL = vsp.GetDoubleResults(resp, "CL")
     print(CL)
-    return CL
+    return resp
 
-def analyze(vsp_fpath:str, des_var_json_path, sim_params, wing_id):
-    
+
+def get_results(res):
+
+    pass
+
+
+def analyze(vsp_fpath: str, des_var_json_path, sim_params, wing_id):
+
     des_var_json = json.load(des_var_json_path)
     des_var_sets = unpack_des_vars(des_var_json)
     for var_set in des_var_sets:
@@ -134,17 +198,12 @@ def analyze(vsp_fpath:str, des_var_json_path, sim_params, wing_id):
 
 if __name__ == "__main__":
     WingName = "WingGeom"
-    
-    sweep_inputs = {
-        "AlphaStart": 2.0,
-        "AlphaNpts": 1,
-        "MachStart": 0.0,
-        "MachNpts": 1
-    }
+
+    sweep_inputs = {"AlphaStart": 2.0, "AlphaNpts": 1, "MachStart": 0.0, "MachNpts": 1}
 
     des_vars = {
         "Dihedral WingGeom": [-10, 0, 3],
         "Sweep WingGeom": [-35, -1, 3],
-        "Aspect WingGeom": [8, 12, 3]
+        "Aspect WingGeom": [8, 12, 3],
     }
     aero_sweep_analysis("Deploy/Files/Check.vsp3", des_vars, sweep_inputs, WingName)
