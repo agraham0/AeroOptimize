@@ -172,6 +172,8 @@ cython_debug/
 *.history
 *.lod
 *.polar
-*.quad.cases
+*.cases
 *.schedule.vspaero
 *.vspaero
+*.dat
+*.slc
