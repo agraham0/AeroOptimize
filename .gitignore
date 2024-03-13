@@ -160,3 +160,17 @@ cython_debug/
 #.idea/
 
 .DS_Store
+
+# VSP Files
+.vsp3
+.adb
+.date
+.csv
+.cuts
+.fem
+.group.1
+.history
+.lod
+.polar
+.quad.cases
+.schedule.vspaero
